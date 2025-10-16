@@ -1,12 +1,12 @@
 import { Chart, registerables } from "chart.js";
 import { createCanvas } from "canvas";
 import http from "http";
-import { blob } from "stream/consumers";
 
 // Daftarkan semua komponen Chart.js
 Chart.register(...registerables);
 
 const server = http.createServer((req, res) => {
+  // Ukuran default canvas
   const width = 600;
   const height = 400;
 
@@ -29,9 +29,11 @@ const server = http.createServer((req, res) => {
     },
   };
 
-  // Fungsi pembuat grafik (Pie, Bar, Line, Doughnut)
+  // Fungsi pembuat grafik
   const buatChart = (type, title, labels, dataset) => {
-    const canvas = createCanvas(width, height);
+    // Untuk pie/doughnut gunakan ukuran canvas sama agar bulat sempurna
+    const isRound = type === "pie" || type === "doughnut";
+    const canvas = createCanvas(isRound ? 400 : width, isRound ? 400 : height);
     const ctx = canvas.getContext("2d");
 
     new Chart(ctx, {
@@ -42,6 +44,7 @@ const server = http.createServer((req, res) => {
       },
       options: {
         responsive: false,
+        aspectRatio: 1, // memastikan proporsional
         plugins: {
           legend: {
             display: true,
@@ -62,7 +65,7 @@ const server = http.createServer((req, res) => {
           },
         },
         scales:
-          type === "pie" || type === "doughnut"
+          isRound
             ? {}
             : {
                 y: {
@@ -86,10 +89,10 @@ const server = http.createServer((req, res) => {
     return canvas.toBuffer("image/png");
   };
 
-  // Data Siswa
+  // Data
   const labels = ["Nabila", "Rozi", "Azka"];
 
-  // Chart 1: Pie Chart
+  // Pie Chart (Nilai UTS)
   const pie = buatChart("pie", "Pie Chart - Nilai UTS", labels, {
     label: "Nilai UTS",
     data: [80, 60, 50],
@@ -106,7 +109,7 @@ const server = http.createServer((req, res) => {
     borderWidth: 2,
   });
 
-  // Chart 2: Bar Chart
+  // Bar Chart (Nilai UAS)
   const bar = buatChart("bar", "Bar Chart - Nilai UAS", labels, {
     label: "Nilai UAS",
     data: [90, 60, 45],
@@ -124,7 +127,7 @@ const server = http.createServer((req, res) => {
     borderRadius: 6,
   });
 
-  // Chart 3: Line Chart
+  // Line Chart (Nilai Harian)
   const line = buatChart("line", "Line Chart - Nilai Harian", labels, {
     label: "Nilai Harian",
     data: [70, 82, 60],
@@ -137,7 +140,7 @@ const server = http.createServer((req, res) => {
     pointHoverRadius: 8,
   });
 
-  // Chart 4: Doughnut Chart
+  // Doughnut Chart (Kehadiran)
   const doughnut = buatChart("doughnut", "Doughnut Chart - Kehadiran", labels, {
     label: "Kehadiran (%)",
     data: [95, 87, 92],
@@ -154,8 +157,8 @@ const server = http.createServer((req, res) => {
     borderWidth: 2,
   });
 
-  // Bangun HTML halaman (layout bisa discroll)
-  let html = `
+  // HTML halaman
+  const html = `
   <!DOCTYPE html>
   <html lang="id">
   <head>
@@ -195,10 +198,10 @@ const server = http.createServer((req, res) => {
         <img src="data:image/png;base64,${pie.toString("base64")}" width="400" height="400" />
       </div>
       <div>
-        <img src="data:image/png;base64,${bar.toString("base64")}" width="500" height="350" />
+        <img src="data:image/png;base64,${bar.toString("base64")}" width="600" height="400" />
       </div>
       <div>
-        <img src="data:image/png;base64,${line.toString("base64")}" width="500" height="350" />
+        <img src="data:image/png;base64,${line.toString("base64")}" width="600" height="400" />
       </div>
       <div>
         <img src="data:image/png;base64,${doughnut.toString("base64")}" width="400" height="400" />
