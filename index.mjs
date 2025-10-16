@@ -1,6 +1,7 @@
 import { Chart, registerables } from "chart.js";
 import { createCanvas } from "canvas";
 import http from "http";
+import { blob } from "stream/consumers";
 
 // Daftarkan semua komponen Chart.js
 Chart.register(...registerables);
